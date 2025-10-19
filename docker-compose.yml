@@ -1,0 +1,25 @@
+# This file defines the services for our local development environment.
+# We use version '3.8' of the Docker Compose file format.
+version: '3.8'
+
+services:
+  # Defines our PostgreSQL database service
+  plangenius-db:
+    image: postgres:15-alpine
+    container_name: plangenius_db
+    ports:
+      # Exposes the database port 5432 on our local machine
+      - "5432:5432"
+    environment:
+      # Sets the default database name, user, and password
+      POSTGRES_DB: plangenius
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: password
+    volumes:
+      # Persists the database data on a local volume so it's not lost
+      # when the container is stopped or removed.
+      - plangenius_data:/var/lib/postgresql/data
+
+volumes:
+  # Defines the named volume used above
+  plangenius_data:

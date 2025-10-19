@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Planning Framework</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Calm Neutral -->
+    <!-- Application Structure Plan: The application is structured as a single-page interactive guide. A persistent vertical stepper navigation on the left allows users to jump to any of the 5 steps, turning the linear document into an explorable tool. The main content panel on the right is dynamic, showing details for the selected step. The key interaction is a set of scenario toggles (Project, Improvement, Finance) within this panel. This design was chosen because it promotes active learning; instead of passively reading, users can directly compare how a single planning principle applies across different domains, reinforcing the framework's universality and utility. -->
+    <!-- Visualization & Content Choices:
+        - Report Info: 5-step framework structure -> Goal: Organize/Navigate -> Presentation: Interactive vertical stepper -> Interaction: Click to switch between steps -> Justification: More engaging and user-friendly than scrolling a long document. Library/Method: HTML/CSS/JS.
+        - Report Info: Examples for Task, Improvement, Finance -> Goal: Compare/Inform -> Presentation: Tabbed content areas -> Interaction: User clicks a button to toggle the displayed scenario -> Justification: Encourages active comparison and deeper understanding of how the principles apply in different contexts. Library/Method: HTML/CSS/JS.
+        - Report Info: Progress monitoring in the financial example -> Goal: Illustrate Change/Progress -> Viz/Presentation: Bar Chart -> Interaction: Static chart displays sample progress over time -> Justification: Provides a clear, visual representation of the "Monitor" step, making the concept more tangible. Library/Method: Chart.js (Canvas).
+        - Report Info: The overall cyclical process -> Goal: Organize/Summarize -> Presentation: A five-node circular diagram -> Interaction: Hover effects to highlight each step -> Justification: Visually summarizes the framework's continuous nature without using forbidden SVG or image files. Library/Method: HTML/CSS with Tailwind.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #FDFBF8;
+            color: #383838;
+        }
+        .active-step {
+            background-color: #4A5568;
+            color: #FFFFFF;
+            border-color: #4A5568;
+        }
+        .inactive-step {
+            background-color: #FFFFFF;
+            color: #4A5568;
+            border-color: #E2E8F0;
+        }
+        .active-scenario {
+            background-color: #A0AEC0;
+            color: #FFFFFF;
+        }
+        .inactive-scenario {
+            background-color: #EDF2F7;
+            color: #4A5568;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 350px;
+            }
+        }
+        .diagram-node {
+            transition: all 0.3s ease-in-out;
+        }
+        .diagram-node:hover {
+            transform: scale(1.05);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+<div class="container mx-auto p-4 md:p-8">
+
+    <header class="text-center mb-10">
+        <h1 class="text-4xl md:text-5xl font-bold text-gray-800">A Universal 5-Step Planning Framework</h1>
+        <p class="mt-4 text-lg text-gray-600 max-w-3xl mx-auto">An interactive guide to bring clarity, structure, and action to any goal. Use the steps on the left to navigate the framework.</p>
+    </header>
+
+    <main class="flex flex-col md:flex-row md:space-x-8">
+
+        <!-- Left Panel: Navigation Stepper -->
+        <aside class="w-full md:w-1/4 mb-8 md:mb-0">
+            <nav id="stepper-nav" class="space-y-4">
+                <!-- Stepper items will be injected by JS -->
+            </nav>
+        </aside>
+
+        <!-- Right Panel: Dynamic Content -->
+        <section id="content-panel" class="w-full md:w-3/4 bg-white p-6 md:p-8 rounded-2xl shadow-lg">
+            <!-- Content will be injected by JS -->
+        </section>
+
+    </main>
+
+    <!-- Visual Diagram Section -->
+    <section class="mt-12 text-center">
+        <h2 class="text-3xl font-bold text-gray-800 mb-2">The Planning Cycle</h2>
+        <p class="text-gray-600 mb-8 max-w-2xl mx-auto">This framework is not a one-time process, but a continuous cycle of planning, acting, and adapting. The final step, "Monitor & Modify," feeds back into the first, allowing for constant improvement.</p>
+        <div class="relative w-full max-w-3xl mx-auto h-96 md:h-[500px] flex items-center justify-center">
+            <div class="absolute w-4/5 h-4/5 border-2 border-dashed border-gray-300 rounded-full"></div>
+            <div class="diagram-node absolute top-0 left-1/2 -translate-x-1/2 -mt-6 bg-gray-700 text-white p-4 rounded-full shadow-md w-36 h-36 flex items-center justify-center text-center">
+                <div><span class="font-bold block">Step 1</span> Define</div>
+            </div>
+            <div class="diagram-node absolute top-1/4 right-0 -mr-4 md:right-0 md:-mr-8 bg-gray-700 text-white p-4 rounded-full shadow-md w-36 h-36 flex items-center justify-center text-center" style="top: 20%; right: -2%;">
+                <div><span class="font-bold block">Step 2</span> Reality Check</div>
+            </div>
+            <div class="diagram-node absolute bottom-1/4 right-0 -mr-4 md:right-0 md:-mr-8 bg-gray-700 text-white p-4 rounded-full shadow-md w-36 h-36 flex items-center justify-center text-center" style="bottom: 20%; right: -2%;">
+                <div><span class="font-bold block">Step 3</span> Envision</div>
+            </div>
+            <div class="diagram-node absolute bottom-0 left-1/2 -translate-x-1/2 mb-[-1.5rem] bg-gray-700 text-white p-4 rounded-full shadow-md w-36 h-36 flex items-center justify-center text-center">
+                <div><span class="font-bold block">Step 4</span> Act</div>
+            </div>
+            <div class="diagram-node absolute bottom-1/4 left-0 -ml-4 md:left-0 md:-ml-8 bg-gray-700 text-white p-4 rounded-full shadow-md w-36 h-36 flex items-center justify-center text-center" style="bottom: 20%; left: -2%;">
+                <div><span class="font-bold block">Step 5</span> Monitor</div>
+            </div>
+        </div>
+    </section>
+
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const frameworkData = [
+            {
+                step: 1,
+                title: 'DEFINE',
+                subtitle: 'The "What" and "Why"',
+                question: 'What is my primary objective, and why is it important?',
+                description: 'Before you can plan how to get somewhere, you must know where you are going and have a compelling reason to go there. A clear, specific, and meaningful goal is the foundation of your entire plan.',
+                examples: {
+                    project: {
+                        title: 'For a Task/Project',
+                        what: 'Launch the new customer feedback portal.',
+                        why: 'To centralize user suggestions, reduce support tickets by 20%, and improve product development.',
+                        metric: 'The portal is live and used by 100+ customers within the first month.'
+                    },
+                    improvement: {
+                        title: 'For Daily Improvement',
+                        what: 'Become more confident in public speaking.',
+                        why: 'To effectively present my ideas at team meetings and advance my career.',
+                        metric: 'I can present for 10 minutes in a team meeting with minimal notes and feel calm.'
+                    },
+                    finance: {
+                        title: 'For Financial Planning',
+                        what: 'Build a $500 emergency fund.',
+                        why: 'To have a safety net for unexpected expenses and reduce financial stress.',
+                        metric: '$500 saved in a separate bank account.'
+                    }
+                }
+            },
+            {
+                step: 2,
+                title: 'REALITY CHECK & RESOURCES',
+                subtitle: 'The "Where" and "With What"',
+                question: 'What is my current situation, and what resources do I have?',
+                description: 'An honest assessment of your starting point is crucial. This step grounds your plan in reality, helping you identify advantages to leverage and obstacles to overcome.',
+                examples: {
+                    project: {
+                        title: 'For a Task/Project',
+                        situation: 'We have a design mockup but no coded prototype. The deadline is in 3 months.',
+                        resources: 'One front-end developer, a budget of $1,000 for software, and existing user data.',
+                        obstacles: 'The developer has other projects taking up 50% of their time.'
+                    },
+                    improvement: {
+                        title: 'For Daily Improvement',
+                        situation: 'I get very anxious when speaking and tend to forget my points.',
+                        resources: 'Access to online courses, a supportive manager, and a weekly team meeting to practice.',
+                        obstacles: 'Limited free time to practice due to a busy schedule.'
+                    },
+                    finance: {
+                        title: 'For Financial Planning',
+                        situation: 'I have $50 in savings. After all bills, I have about $40 of discretionary income each month.',
+                        resources: 'A stable income, the ability to cook at home to save money.',
+                        obstacles: 'Unexpected costs (like transport repairs) often arise. It\'s difficult to avoid small, impulsive purchases.'
+                    }
+                }
+            },
+            {
+                step: 3,
+                title: 'ENVISION & ENGINEER',
+                subtitle: 'The "How"',
+                question: 'What are the specific steps to get from my reality to my goal?',
+                description: 'This is where you build the roadmap. Break your large goal into smaller, manageable tasks. The key is to create a clear sequence of actions.',
+                examples: {
+                    project: {
+                        title: 'For a Task/Project (Milestones)',
+                        steps: [
+                            'Finalize technical specifications.',
+                            'Develop the front-end interface.',
+                            'Build the back-end database.',
+                            'Test the portal with an internal team.',
+                            'Deploy and launch.'
+                        ]
+                    },
+                    improvement: {
+                        title: 'For Daily Improvement (Action Steps)',
+                        steps: [
+                            'Watch one 15-minute public speaking video each week.',
+                            'Write down 3 key points before each team meeting.',
+                            'Practice presenting these points out loud for 5 minutes.',
+                            'Volunteer to speak for 2-3 minutes during one meeting per month.'
+                        ]
+                    },
+                    finance: {
+                        title: 'For Financial Planning (Action Steps)',
+                        steps: [
+                            'Identify two subscriptions to cancel to save $15/month.',
+                            'Set up an automatic transfer of $10 to a savings account every payday.',
+                            'Plan meals for the week to reduce eating out, aiming to save $25/month.',
+                            'Put any unexpected money (e.g., a small refund) directly into savings.'
+                        ]
+                    }
+                }
+            },
+            {
+                step: 4,
+                title: 'ACT & ALLOCATE',
+                subtitle: 'The "Who" and "When"',
+                question: 'How do I put this plan into motion with clear responsibilities and timelines?',
+                description: 'A plan is just a document until you assign actions and deadlines. This step turns your strategy into a schedule. If you are planning for yourself, this is about committing time in your calendar.',
+                examples: {
+                    project: {
+                        title: 'For a Task/Project',
+                        who: 'Anna is responsible for testing. Mark is responsible for development.',
+                        when: 'Front-end development complete by July 1st. Testing to be finished by August 15th.'
+                    },
+                    improvement: {
+                        title: 'For Daily Improvement',
+                        who: 'Me.',
+                        when: 'I will block out 30 minutes every Sunday evening to watch a video and plan my speaking points for the week.'
+                    },
+                    finance: {
+                        title: 'For Financial Planning',
+                        who: 'Me.',
+                        when: 'This weekend, I will review my bank statement and cancel the subscriptions. I will set up the automatic transfer today.'
+                    }
+                }
+            },
+            {
+                step: 5,
+                title: 'MONITOR & MODIFY',
+                subtitle: 'The "How\'s It Going?"',
+                question: 'How will I track progress and adapt the plan when things change?',
+                description: 'No plan is perfect. Regular reviews allow you to celebrate progress, identify what isn\'t working, and make adjustments to stay on track.',
+                examples: {
+                    project: {
+                        title: 'For a Task/Project',
+                        monitor: 'Weekly 30-minute check-in meetings. Use a project management tool (like Trello or Asana) to track task completion.',
+                        modify: 'If development is delayed, we will simplify the initial launch features and add them in a later update.'
+                    },
+                    improvement: {
+                        title: 'For Daily Improvement',
+                        monitor: 'At the end of each month, I will write down in a journal how I felt during my presentations and what I can improve.',
+                        modify: 'If I\'m still too nervous, I will ask my manager if I can practice my presentation with them one-on-one first.'
+                    },
+                    finance: {
+                        title: 'For Financial Planning',
+                        monitor: 'I will check my savings account balance on the 1st of every month to see my progress toward $500.',
+                        modify: 'If an unexpected expense wipes out my savings, I will not be discouraged. I will restart the plan the following month, perhaps adjusting my savings goal to a smaller amount temporarily.'
+                    }
+                }
+            }
+        ];
+
+        const stepperNav = document.getElementById('stepper-nav');
+        const contentPanel = document.getElementById('content-panel');
+        let currentStep = 1;
+        let currentScenario = 'project';
+        let chartInstance = null;
+
+        function renderStepper() {
+            stepperNav.innerHTML = '';
+            frameworkData.forEach(item => {
+                const isActive = item.step === currentStep;
+                const button = document.createElement('button');
+                button.className = `w-full flex items-center text-left p-4 rounded-lg border transition-all duration-300 ${isActive ? 'active-step' : 'inactive-step'}`;
+                button.dataset.step = item.step;
+
+                button.innerHTML = `
+                    <div class="flex-shrink-0 w-8 h-8 rounded-full border-2 flex items-center justify-center font-bold mr-4 ${isActive ? 'bg-white text-gray-700 border-white' : 'bg-gray-200 text-gray-600'}">
+                       ${item.step}
+                    </div>
+                    <div>
+                        <div class="font-bold text-sm">${item.title}</div>
+                        <div class="text-xs opacity-80">${item.subtitle}</div>
+                    </div>
+                `;
+                button.addEventListener('click', () => {
+                    currentStep = parseInt(button.dataset.step);
+                    render();
+                });
+                stepperNav.appendChild(button);
+            });
+        }
+
+        function renderContent() {
+            const data = frameworkData.find(item => item.step === currentStep);
+            if (!data) return;
+
+            let exampleHtml = '';
+            const exampleData = data.examples[currentScenario];
+
+            if (data.step === 1) {
+                exampleHtml = `
+                    <h4 class="font-semibold text-gray-700 mt-6 mb-2">${exampleData.title}</h4>
+                    <ul class="space-y-3 text-gray-600">
+                       <li><strong class="font-medium text-gray-800">What:</strong> ${exampleData.what}</li>
+                       <li><strong class="font-medium text-gray-800">Why:</strong> ${exampleData.why}</li>
+                       <li><strong class="font-medium text-gray-800">Success Metric:</strong> ${exampleData.metric}</li>
+                    </ul>`;
+            } else if (data.step === 2) {
+                exampleHtml = `
+                    <h4 class="font-semibold text-gray-700 mt-6 mb-2">${exampleData.title}</h4>
+                    <ul class="space-y-3 text-gray-600">
+                       <li><strong class="font-medium text-gray-800">Current Situation:</strong> ${exampleData.situation}</li>
+                       <li><strong class="font-medium text-gray-800">Resources:</strong> ${exampleData.resources}</li>
+                       <li><strong class="font-medium text-gray-800">Obstacles:</strong> ${exampleData.obstacles}</li>
+                    </ul>`;
+            } else if (data.step === 3) {
+                 exampleHtml = `
+                    <h4 class="font-semibold text-gray-700 mt-6 mb-2">${exampleData.title}</h4>
+                    <ol class="list-decimal list-inside space-y-2 text-gray-600">
+                        ${exampleData.steps.map(step => `<li>${step}</li>`).join('')}
+                    </ol>`;
+            } else if (data.step === 4) {
+                exampleHtml = `
+                    <h4 class="font-semibold text-gray-700 mt-6 mb-2">${exampleData.title}</h4>
+                    <ul class="space-y-3 text-gray-600">
+                       <li><strong class="font-medium text-gray-800">Who:</strong> ${exampleData.who}</li>
+                       <li><strong class="font-medium text-gray-800">When:</strong> ${exampleData.when}</li>
+                    </ul>`;
+            } else if (data.step === 5) {
+                exampleHtml = `
+                    <h4 class="font-semibold text-gray-700 mt-6 mb-2">${exampleData.title}</h4>
+                    <ul class="space-y-3 text-gray-600">
+                       <li><strong class="font-medium text-gray-800">Monitor:</strong> ${exampleData.monitor}</li>
+                       <li><strong class="font-medium text-gray-800">Modify:</strong> ${exampleData.modify}</li>
+                    </ul>`;
+                if (currentScenario === 'finance') {
+                     exampleHtml += `
+                     <div class="mt-6">
+                        <p class="text-center text-sm text-gray-600 mb-2">Example: Tracking Progress Towards a $500 Goal</p>
+                        <div class="chart-container">
+                            <canvas id="progressChart"></canvas>
+                        </div>
+                     </div>
+                     `;
+                }
+            }
+
+            contentPanel.innerHTML = `
+                <div>
+                    <span class="text-sm font-bold uppercase tracking-wider text-gray-500">${data.subtitle}</span>
+                    <h2 class="text-3xl font-bold text-gray-800 mt-1">${data.title}</h2>
+                    <p class="mt-4 text-gray-600">${data.question}</p>
+                    <p class="mt-2 text-sm text-gray-500">${data.description}</p>
+                </div>
+                <div class="mt-6 border-t border-gray-200 pt-6">
+                    <h3 class="text-lg font-semibold text-gray-800">How to Apply It</h3>
+                    <p class="text-sm text-gray-500 mb-4">Select a scenario to see how this step works in practice.</p>
+                    <div id="scenario-toggles" class="flex flex-wrap gap-2">
+                       <button data-scenario="project" class="px-4 py-2 text-sm font-medium rounded-full transition-colors duration-200">Task/Project</button>
+                       <button data-scenario="improvement" class="px-4 py-2 text-sm font-medium rounded-full transition-colors duration-200">Daily Improvement</button>
+                       <button data-scenario="finance" class="px-4 py-2 text-sm font-medium rounded-full transition-colors duration-200">Financial Planning</button>
+                    </div>
+                    <div id="example-content" class="mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200">${exampleHtml}</div>
+                </div>
+            `;
+
+            if (chartInstance) {
+                chartInstance.destroy();
+                chartInstance = null;
+            }
+
+            if (data.step === 5 && currentScenario === 'finance') {
+                renderChart();
+            }
+
+            updateScenarioToggles();
+        }
+
+        function renderChart() {
+            const ctx = document.getElementById('progressChart');
+            if (!ctx) return;
+
+            chartInstance = new Chart(ctx.getContext('2d'), {
+                type: 'bar',
+                data: {
+                    labels: ['Start', 'Month 1', 'Month 2', 'Month 3', 'Month 4', 'Goal'],
+                    datasets: [{
+                        label: 'Savings Progress ($)',
+                        data: [50, 90, 130, 150, 200, 500],
+                        backgroundColor: [
+                            'rgba(160, 174, 192, 0.6)',
+                            'rgba(160, 174, 192, 0.6)',
+                            'rgba(160, 174, 192, 0.6)',
+                            'rgba(160, 174, 192, 0.6)',
+                            'rgba(160, 174, 192, 0.6)',
+                            'rgba(74, 85, 104, 0.6)'
+                        ],
+                        borderColor: [
+                            'rgba(160, 174, 192, 1)',
+                            'rgba(160, 174, 192, 1)',
+                            'rgba(160, 174, 192, 1)',
+                            'rgba(160, 174, 192, 1)',
+                            'rgba(160, 174, 192, 1)',
+                            'rgba(74, 85, 104, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 550,
+                            grid: {
+                                color: '#E2E8F0'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `Amount: $${context.raw}`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateScenarioToggles() {
+            const toggles = document.querySelectorAll('#scenario-toggles button');
+            toggles.forEach(toggle => {
+                if (toggle.dataset.scenario === currentScenario) {
+                    toggle.classList.add('active-scenario');
+                    toggle.classList.remove('inactive-scenario');
+                } else {
+                    toggle.classList.add('inactive-scenario');
+                    toggle.classList.remove('active-scenario');
+                }
+                toggle.addEventListener('click', () => {
+                    currentScenario = toggle.dataset.scenario;
+                    renderContent();
+                });
+            });
+        }
+
+        function render() {
+            renderStepper();
+            renderContent();
+        }
+
+        render();
+    });
+</script>
+</body>
+</html>
